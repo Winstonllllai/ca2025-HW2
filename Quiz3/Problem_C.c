@@ -9,17 +9,6 @@ static const uint32_t inv_sqrt_cache[REC_INV_SQRT_CACHE] = {
     1239850263, 1191209601, 1147878294, 1108955788
 };
 
-static int clz(uint32_t x){
-    if(!x)return 32;
-    int n = 0;
-    if(!(x & 0xFFFF0000)) {n += 16; x <<= 16;}
-    if(!(x & 0xFF000000)) {n += 8; x <<= 8;}
-    if(!(x & 0xF0000000)) {n += 4; x <<= 4;}
-    if(!(x & 0xC0000000)) {n += 2; x <<= 2;}
-    if(!(x & 0x80000000)) {n += 1;}
-    return n;
-}
-
 static const uint16_t rsqrt_table[32] = {
 65536, 46341, 32768, 23170, 16384, /* 2^0 to 2^4 */
 11585, 8192, 5793, 4096, 2896,     /* 2^5 to 2^9 */
@@ -48,6 +37,17 @@ static void newton_step(uint32_t *rec_inv_sqrt, uint32_t x){
     *rec_inv_sqrt = (uint32_t)val;
 }
 
+static int clz(uint32_t x){
+    if(!x)return 32;
+    int n = 0;
+    if(!(x & 0xFFFF0000)) {n += 16; x <<= 16;}
+    if(!(x & 0xFF000000)) {n += 8; x <<= 8;}
+    if(!(x & 0xF0000000)) {n += 4; x <<= 4;}
+    if(!(x & 0xC0000000)) {n += 2; x <<= 2;}
+    if(!(x & 0x80000000)) {n += 1;}
+    return n;
+}
+
 static uint64_t mul32(uint32_t a, uint32_t b){
     uint64_t r=0;
 
@@ -57,6 +57,26 @@ static uint64_t mul32(uint32_t a, uint32_t b){
     }
 
     return r;
+}
+
+static uint64_t mul32_split(uint32_t a, uint32_t b){
+    uint32_t r_lo = 0;
+    uint32_t r_hi = 0;
+    
+    for(int i = 0; i < 32; i++){
+        if(b & (1U << i)){
+            uint32_t add_lo = a << i;
+            uint32_t add_hi = (i == 0) ? 0 : (a >> (32 - i));
+            
+            uint32_t prev_lo = r_lo;
+            r_lo += add_lo;
+            if (r_lo < prev_lo) {
+                r_hi += 1; 
+            }
+            r_hi += add_hi;
+        }
+    }
+    return ((uint64_t)r_hi << 32) | r_lo;
 }
 
 uint32_t fast_rsqrt(uint32_t x){

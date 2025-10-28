@@ -10,7 +10,7 @@ static const uint32_t inv_sqrt_cache[REC_INV_SQRT_CACHE] = {
 };
 
 static const uint16_t rsqrt_table[32] = {
-65536, 46341, 32768, 23170, 16384, /* 2^0 to 2^4 */
+0, 46341, 32768, 23170, 16384, /* 2^0 to 2^4 */
 11585, 8192, 5793, 4096, 2896,     /* 2^5 to 2^9 */
 2048, 1448, 1024, 724, 512,        /* 2^10 to 2^14 */
 362, 256, 181, 128, 90,            /* 2^15 to 2^19 */
@@ -100,4 +100,11 @@ uint32_t fast_rsqrt(uint32_t x){
     }
 
     return y;
+}
+
+#include <stdio.h>
+
+int main(){
+    printf("%d\n", fast_rsqrt(5));
+    return 0;
 }

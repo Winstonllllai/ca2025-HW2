@@ -61,31 +61,31 @@ clz:
     ret
 clz.not_zero:
     li t0, 0            # n = 0
-    lui t1, 0xFFFF      # mask = 0xFFFF0000
+    lui t1, 0xFFFF0      # mask = 0xFFFF0000
     and t2, a0, t1
     bnez t2, clz.skip1 
     addi t0, t0, 16     # n += 16
     slli a0, a0, 16
 clz.skip1:
-    lui t1, 0xFF00       # mask = 0xFF000000
+    lui t1, 0xFF000       # mask = 0xFF000000
     and t2, a0, t1
     bnez t2, clz.skip2
     addi t0, t0, 8      # n += 8
     slli a0, a0, 8
 clz.skip2:
-    lui t1, 0xF000       # mask = 0xF0000000
+    lui t1, 0xF0000       # mask = 0xF0000000
     and t2, a0, t1
     bnez t2, clz.skip3
     addi t0, t0, 4      # n += 4
     slli a0, a0, 4
 clz.skip3:
-    lui t1, 0xC000       # mask = 0xC0000000
+    lui t1, 0xC0000       # mask = 0xC0000000
     and t2, a0, t1
     bnez t2, clz.skip4
     addi t0, t0, 2      # n += 2
     slli a0, a0, 2
 clz.skip4:
-    lui t1, 0x8000       # mask = 0x80000000
+    lui t1, 0x80000       # mask = 0x80000000
     and t2, a0, t1
     bnez t2, clz.end
     addi t0, t0, 1      # n += 1
@@ -227,7 +227,7 @@ inv_sqrt_cache: .word  0xFFFFFFFF, 0xFFFFFFFF, 3037000500, 2479700525
                 .word   1518500250, 1431655765, 1358187914, 1294981364
                 .word   1264197512, 1220703125, 1181116006, 1145324612
 
-rsqrt_table: .half 65536, 46341, 32768, 23170, 16384
+rsqrt_table: .half 65535, 46341, 32768, 23170, 16384
             .half 11585, 8192, 5793, 4096, 2896
             .half 2048, 1448, 1024, 724, 512
             .half 362, 256, 181, 128, 90

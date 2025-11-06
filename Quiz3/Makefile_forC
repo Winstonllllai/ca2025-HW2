@@ -8,7 +8,7 @@ EMU ?= ../../../build/rv32emu
 
 AFLAGS = -g $(ARCH)
 CFLAGS = -g -march=rv32i_zicsr
-LDFLAGS = -T $(LINKER_SCRIPT)
+LDFLAGS = -T $(LINKER_SCRIPT) -nostartfiles
 EXEC = test.elf
 
 CC = $(CROSS_COMPILE)gcc
@@ -16,14 +16,14 @@ AS = $(CROSS_COMPILE)as
 LD = $(CROSS_COMPILE)ld
 OBJDUMP = $(CROSS_COMPILE)objdump
 
-OBJS = start.o uf8_optim.o print.o
+OBJS = start.o Problem_C.o print.o
 
 .PHONY: all run dump clean
 
 all: $(EXEC)
 
 $(EXEC): $(OBJS) $(LINKER_SCRIPT)
-	$(LD) $(LDFLAGS) -o $@ $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS)
 
 %.o: %.S
 	$(AS) $(AFLAGS) $< -o $@

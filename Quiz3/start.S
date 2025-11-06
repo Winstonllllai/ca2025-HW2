@@ -14,13 +14,14 @@ clear_bss:
     j clear_bss
 bss_cleared:
     call main
+
     li a7, 93
     li a0, 0
     ecall
 infinite_loop:
     j infinite_loop
 
-.size = _start, .-_start
+.size _start, .-_start
 
 .weak __bss_start
 .weak __bss_end

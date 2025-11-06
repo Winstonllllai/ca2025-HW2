@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include "print.h"
 
 typedef uint8_t uf8;
 
@@ -85,14 +85,24 @@ static bool test(void)
         uint8_t fl2 = uf8_encode(value);
 
         if (fl != fl2) {
-            printf("%02x: produces value %d but encodes back to %02x\n", fl,
-                   value, fl2);
+            print_hex_byte(fl);
+            TEST_LOGGER(": produces value ");
+            print_dec(value);
+            TEST_LOGGER(" but encodes back to ");
+            print_hex_byte(fl2);
+            TEST_LOGGER("\n");
+            
             passed = false;
         }
 
         if (value <= previous_value) {
-            printf("%02x: value %d <= previous_value %d\n", fl, value,
-                   previous_value);
+            print_hex_byte(fl);
+            TEST_LOGGER(": value ");
+            print_dec(value);
+            TEST_LOGGER(" <= previous_value ");
+            print_dec(previous_value);
+            TEST_LOGGER("\n");
+            
             passed = false;
         }
 
@@ -105,7 +115,7 @@ static bool test(void)
 int main(void)
 {
     if (test()) {
-        printf("All tests passed.\n");
+        TEST_LOGGER("All tests passed.\n");
         return 0;
     }
     return 1;

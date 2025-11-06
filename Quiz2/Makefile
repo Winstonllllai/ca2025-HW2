@@ -6,9 +6,9 @@ LINKER_SCRIPT = linker.ld
 
 EMU ?= ../../../build/rv32emu
 
-AFLAGS = -g $(ARCH) -mabi=ilp32
-CFLAGS = -g -march=rv32i_zicsr -mabi=ilp32
-LDFLAGS = -T $(LINKER_SCRIPT) -mabi=ilp32
+AFLAGS = -g $(ARCH)
+CFLAGS = -g -march=rv32i_zicsr
+LDFLAGS = -T $(LINKER_SCRIPT)
 EXEC = test.elf
 
 CC = $(CROSS_COMPILE)gcc
@@ -16,7 +16,7 @@ AS = $(CROSS_COMPILE)as
 LD = $(CROSS_COMPILE)ld
 OBJDUMP = $(CROSS_COMPILE)objdump
 
-OBJS = start.o Problem_A.o
+OBJS = start.o Problem_A.o print.o
 
 .PHONY: all run dump clean
 

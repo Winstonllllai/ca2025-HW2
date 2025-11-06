@@ -1,4 +1,7 @@
 # include <stdint.h>
+# include <stdlib.h>
+# include <stdbool.h>
+# include "print.h"
 
 #define REC_INV_SQRT_CACHE (16)
 
@@ -89,12 +92,12 @@ uint32_t fast_rsqrt(uint32_t x){
     if(x > (1U << exp)){
         uint32_t y_next = (exp < 31)? rsqrt_table[exp+1]: 0;
         uint32_t delta = y - y_next;
-        uint32_t frac = ((x - (1U << exp)) << 16) / (1u << exp);
+        uint32_t frac = (uint32_t) ((((uint64_t)x - (1UL << exp)) << 16) >> exp);
         y -= (uint32_t) ((delta * frac) >> 16);
     }
 
     for (int iter = 0; iter < 2; iter++){
-        uint32_t y2 = (uint32_t)(mul32(y, y) >> 16);
+        uint32_t y2 = (uint32_t)mul32(y, y);
         uint32_t xy2 = (uint32_t)(mul32(x, y2) >> 16);
         y = (uint32_t)(mul32(y, (3u << 16) - xy2) >> 17);
     }
@@ -102,9 +105,10 @@ uint32_t fast_rsqrt(uint32_t x){
     return y;
 }
 
-#include <stdio.h>
+int main() {
+    uint32_t result = fast_rsqrt(5);
+    print_dec(result);
+    printstr("\n", 1);
 
-int main(){
-    printf("%d\n", fast_rsqrt(5));
     return 0;
 }

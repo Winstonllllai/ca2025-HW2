@@ -16,7 +16,7 @@ AS = $(CROSS_COMPILE)as
 LD = $(CROSS_COMPILE)ld
 OBJDUMP = $(CROSS_COMPILE)objdump
 
-OBJS = start.o rsqrt.o
+OBJS = start.o rsqrt_optim.o print.o
 
 .PHONY: all run dump clean
 

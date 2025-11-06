@@ -1,4 +1,31 @@
 .text
+.globl  main
+main:
+    addi   sp, sp, -4
+    sw     ra, 0(sp)
+    li a7, 0x40         # syscall: write
+    li a0, 1            # file descriptor (stdout)
+    la a1, str1         # Load address of
+    li a2, 23           # length
+    ecall
+    la t0, test_data
+    lw a0, 0(t0)
+    jal print_dec
+    li a0, 1
+    la a1, str2         # Load address of
+    li a2, 6            # length
+    ecall
+    la a0, test_data
+    lw a0, 0(a0)
+    jal fast_rsqrt
+    jal print_dec
+    li a0, 1
+    la a1, str3         # Load address of
+    li a2, 18           # length
+    ecall
+    lw     ra, 0(sp)
+    addi   sp, sp, 4
+    ret
 # ============================================================
 # function: fast_rsqrt
 # ============================================================
@@ -190,8 +217,6 @@ fast_rsqrt.loop:
     mv a0, s3      # a0 = y
     mv a1, s3      # a1 = y
     jal ra, mul32      # y^2, a0 = y^2_lo, a1 = y^2_hi
-    slli a1, a1, 16 
-    srli a0, a0, 16
     or a1, a1, a0   # a1 = y2 = y^2 >> 16
     mv a0, s0      # a0 = x
     jal ra, mul32      # prod = x * y2
@@ -234,3 +259,9 @@ rsqrt_table: .half 65535, 46341, 32768, 23170, 16384
             .half 64, 45, 32, 23, 16
             .half 11, 8, 6, 4, 3
             .half 2, 1
+
+test_data: .word 4
+
+str1:      .asciz  "Reverse Square Root of "
+str2:      .asciz  " is: "
+str3:      .asciz  " in fp32 encoding\n"

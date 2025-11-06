@@ -8,6 +8,7 @@ str6: .string "\n"
 
 
 .text
+.globl main
 # ======================================
 # Function: main
 # ======================================
@@ -20,12 +21,13 @@ main:
     lw ra, 0(sp)     # Restore return address
     addi sp, sp, 4   # Deallocate stack space
     beq a0, zero, main.end  # if (a0 == 0) goto main.end
-    la a0, str5  # Load address of str5
-    li a7, 4  # syscall: print string
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str5  # Load address of str5
+    li a2, 18  # length = 18
     ecall
 main.end:
-    li a7, 10  # exit code = 10
-    ecall
+    ret
 
 # ======================================
 # Function: clz (Optimized with Unrolling)
@@ -164,43 +166,49 @@ test.loop:
     mv t4, s2  # fl = t4 = i
     beq t4, t6, test.skip1  # if (fl == fl2) goto skip1
     mv a0, t4  # a0 = fl
-    li a7, 34  # syscall: print integer
-    ecall
-    la a0, str1  # Load address of str1
-    li a7, 4  # syscall: print string
+    jal print_dec  # print fl
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str1  # Load address of str1
+    li a2, 17  # length = 17
     ecall
     mv a0, t5  # a0 = value
-    li a7, 1  # syscall: print integer
-    ecall
-    la a0, str2  # Load address of str2
-    li a7, 4  # syscall: print string
+    jal print_dec  # print value
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str2  # Load address of str2
+    li a2, 21  # length = 21
     ecall
     mv a0, t6  # a0 = fl2
-    li a7, 34  # syscall: print integer
-    ecall
-    la a0, str6  # Load address of str6
-    li a7, 4  # syscall: print string
+    jal print_dec  # print fl2
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str6  # Load address of str6
+    li a2, 1  # length = 1
     ecall
     li s1, 0  # passed = 0
 test.skip1:
     blt s0, t5, test.skip2  # if (previous_value < value) goto skip2
     mv a0, t4  # a0 = fl
-    li a7, 34  # syscall: print integer
-    ecall
-    la a0, str3  # Load address of str3
-    li a7, 4  # syscall: print string
+    jal print_dec  # print fl
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str3  # Load address of str3
+    li a2, 8  # length = 8
     ecall
     mv a0, t5  # a0 = value
-    li a7, 1  # syscall: print integer
-    ecall
-    la a0, str4  # Load address of str4
-    li a7, 4  # syscall: print string
+    jal print_dec  # print value
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str4  # Load address of str4
+    li a2, 19  # length = 19
     ecall
     mv a0, s0  # a0 = previous_value
-    li a7, 1  # syscall: print integer
-    ecall
-    la a0, str6  # Load address of str6
-    li a7, 4  # syscall: print string
+    jal print_dec  # print previous_value
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str6  # Load address of str6
+    li a2, 1  # length = 1
     ecall
     li s1, 0  # passed = 0
     mv a0, s1  # return passed

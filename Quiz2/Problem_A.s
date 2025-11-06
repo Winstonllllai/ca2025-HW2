@@ -1,7 +1,7 @@
     .text
     .globl  main
 main:
-    addi    x2, x2, -32
+    addi    x2, x2, -36
     sw      x8, 0(x2)
     sw      x9, 4(x2)
     sw      x18, 8(x2)
@@ -12,6 +12,7 @@ main:
     sw      x5, 20(x2)
     sw      x5, 24(x2)
     sw      x5, 28(x2)
+    sw      ra, 32(x2)
 
     # Fix disk positions (BLANK 1-3: neutralize x5 effect)
     # BLANK 1: Fix position at x2+20
@@ -105,15 +106,9 @@ handle_large:
 display_move:
     la      x20, obdata
     add     x5, x20, x18
-
-    # BLANK 23: Load byte from obfuscated data
     lbu     x11, 0(x5)
-
-    # BLANK 24: Decode constant (0x6F)
     li      x6, 0x6F
     xor     x11, x11, x6
-
-    # BLANK 25: Final offset adjustment
     addi    x11, x11, -0x12
 
     add     x7, x20, x19
@@ -121,26 +116,44 @@ display_move:
     xor     x12, x12, x6
     addi    x12, x12, -0x12
 
-    la      x10, str1
-    addi    x17, x0, 4
+    mv      t1, x11
+    mv      t2, x12
+    li a7, 0x40
+    li a0, 1
+    la a1, str1
+    li a2, 10
     ecall
+
     addi    x10, x9, 1
-    addi    x17, x0, 1
+    jal print_dec
+
+    li a0, 1
+    la a1, str2
+    li a2, 6
     ecall
-    la      x10, str2
-    addi    x17, x0, 4
+
+    la t0, char_buffer
+    sb t1, 0(t0)
+    li a0, 1
+    mv a1, t0
+    li a2, 1
     ecall
-    addi    x10, x11, 0
-    addi    x17, x0, 11
+
+    li a0, 1
+    la a1, str3
+    li a2, 4
     ecall
-    la      x10, str3
-    addi    x17, x0, 4
+
+    la t0, char_buffer
+    sb t2, 0(t0)
+    li a0, 1
+    mv a1, t0
+    li a2, 1
     ecall
-    addi    x10, x12, 0
-    addi    x17, x0, 11
-    ecall
-    addi    x10, x0, 10
-    addi    x17, x0, 11
+
+    li a0, 1
+    la a1, str4
+    li a2, 1
     ecall
 
     # BLANK 26: Calculate storage offset
@@ -161,12 +174,14 @@ finish_game:
     lw      x18, 8(x2)
     lw      x19, 12(x2)
     lw      x20, 16(x2)
-    addi    x2, x2, 32
-    addi    x17, x0, 10
-    ecall
+    lw      ra, 32(x2)
+    addi    x2, x2, 36
+    ret
 
     .data
 obdata:     .byte   0x3c, 0x3b, 0x3a
 str1:       .asciz  "Move Disk "
 str2:       .asciz  " from "
 str3:       .asciz  " to "
+str4:       .asciz  "\n"
+char_buffer: .space  1

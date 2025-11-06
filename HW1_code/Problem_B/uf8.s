@@ -8,6 +8,7 @@ str6: .string "\n"
 
 
 .text
+.globl main
 # ======================================
 # Function: main
 # ======================================
@@ -20,12 +21,13 @@ main:
     lw ra, 0(sp)     # Restore return address
     addi sp, sp, 4   # Deallocate stack space
     beq a0, zero, main.end  # if (a0 == 0) goto main.end
-    la a0, str5  # Load address of str5
-    li a7, 4  # syscall: print string
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str5  # Load address of str5
+    li a2, 18  # length = 18
     ecall
 main.end:
-    li a7, 10  # exit code = 10
-    ecall
+    ret
 
 # ======================================
 # Function: clz
@@ -128,77 +130,81 @@ uf8_encode.end:
 test:
     # Input: void
     # Output: a0 = boolean (1 = pass, 0 = fail)
-    li t0, -1   # previous_value = -1
-    li t1, 1    # t1 = passed = 1
-    li t2, 0    # i = 0
-    li t3, 256  # max = 256
-test.loop:
-    bge t2, t3, test.end   # if (i >= max) goto end
-    mv t4, t2  # fl = t4 = i
-    mv a0, t4  # a0 = fl
-    addi sp, sp, -24  # Allocate stack space
+    addi sp, sp, -20  # Allocate stack space
     sw ra, 0(sp)  # Save return address
-    sw t0, 4(sp)  # Save previous_value
-    sw t1, 8(sp)  # Save passed
-    sw t2, 12(sp)  # Save i
-    sw t3, 16(sp)  # Save max
-    sw t4, 20(sp)  # Save fl
+    sw s0, 4(sp)  # Save previous_value
+    sw s1, 8(sp)  # Save passed
+    sw s2, 12(sp)  # Save i
+    sw s3, 16(sp)  # Save max
+    li s0, -1   # previous_value = -1
+    li s1, 1    # s1 = passed = 1
+    li s2, 0    # s2 = i = 0
+    li s3, 256  # s3 = max = 256
+test.loop:
+    bge s2, s3, test.end   # if (i >= max) goto end
+    mv a0, s2  # a0 = fl
     jal uf8_decode  # a0 = uf8_decode(fl)
     mv t5, a0  # value = t5 = uf8_decode(fl)
     jal uf8_encode  # a0 = uf8_encode(value)
     mv t6, a0  # fl2 = t6 = uf8_encode(value)
-    lw t4, 20(sp)  # Restore fl
-    lw t3, 16(sp)  # Restore max
-    lw t2, 12(sp)  # Restore i
-    lw t1, 8(sp)  # Restore passed
-    lw t0, 4(sp)  # Restore previous_value
-    lw ra, 0(sp)  # Restore return address
-    addi sp, sp, 24   # Deallocate stack space
+    mv t4, s2  # fl = t4 = i
     beq t4, t6, test.skip1  # if (fl == fl2) goto skip1
     mv a0, t4  # a0 = fl
-    li a7, 34  # syscall: print integer
-    ecall
-    la a0, str1  # Load address of str1
-    li a7, 4  # syscall: print string
+    jal print_dec  # print fl
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str1  # Load address of str1
+    li a2, 17  # length = 17
     ecall
     mv a0, t5  # a0 = value
-    li a7, 1  # syscall: print integer
-    ecall
-    la a0, str2  # Load address of str2
-    li a7, 4  # syscall: print string
+    jal print_dec  # print value
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str2  # Load address of str2
+    li a2, 21  # length = 21
     ecall
     mv a0, t6  # a0 = fl2
-    li a7, 34  # syscall: print integer
+    jal print_dec  # print fl2
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str6  # Load address of str6
+    li a2, 1  # length = 1
     ecall
-    la a0, str6  # Load address of str6
-    li a7, 4  # syscall: print string
-    ecall
-    li t1, 0  # passed = 0
+    li s1, 0  # passed = 0
 test.skip1:
-    blt t0, t5, test.skip2  # if (previous_value < value) goto skip2
+    blt s0, t5, test.skip2  # if (previous_value < value) goto skip2
     mv a0, t4  # a0 = fl
-    li a7, 34  # syscall: print integer
-    ecall
-    la a0, str3  # Load address of str3
-    li a7, 4  # syscall: print string
+    jal print_dec  # print fl
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str3  # Load address of str3
+    li a2, 8  # length = 8
     ecall
     mv a0, t5  # a0 = value
-    li a7, 1  # syscall: print integer
+    jal print_dec  # print value
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str4  # Load address of str4
+    li a2, 19  # length = 19
     ecall
-    la a0, str4  # Load address of str4
-    li a7, 4  # syscall: print string
+    mv a0, s0  # a0 = previous_value
+    jal print_dec  # print previous_value
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str6  # Load address of str6
+    li a2, 1  # length = 1
     ecall
-    mv a0, t0  # a0 = previous_value
-    li a7, 1  # syscall: print integer
-    ecall
-    la a0, str6  # Load address of str6
-    li a7, 4  # syscall: print string
-    ecall
-    li t1, 0  # passed = 0
+    li s1, 0  # passed = 0
+    mv a0, s1  # return passed
 test.skip2:
-    mv t0, t5  # previous_value = value
-    addi t2, t2, 1  # i++
+    mv s0, t5  # previous_value = value
+    addi s2, s2, 1  # i++
     j test.loop
 test.end:
-    mv a0, t1  # return passed
+    lw s3, 16(sp)  # Restore max
+    lw s2, 12(sp)  # Restore i
+    lw s1, 8(sp)   # Restore passed
+    lw s0, 4(sp)   # Restore previous_value
+    lw ra, 0(sp)   # Restore return address
+    addi sp, sp, 20  # Deallocate stack space
     ret  # End of test function

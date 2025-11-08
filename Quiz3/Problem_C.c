@@ -5,6 +5,9 @@
 
 #define REC_INV_SQRT_CACHE (16)
 
+extern uint64_t get_cycles();
+extern uint64_t get_instret();
+
 static const uint32_t inv_sqrt_cache[REC_INV_SQRT_CACHE] = {
     ~0U,        ~0U,        3037000500, 2479700525,
     2147483647, 1920767767, 1753413056, 1623345051,
@@ -106,9 +109,24 @@ uint32_t fast_rsqrt(uint32_t x){
 }
 
 int main() {
-    uint32_t result = fast_rsqrt(5);
+    int num = 4;
+    uint64_t oldcycle = get_cycles();
+    uint64_t oldinstret = get_instret();
+    uint32_t result = fast_rsqrt(num);
+    uint64_t cycle_count = get_cycles() - oldcycle;
+    uint64_t instret_count = get_instret() - oldinstret;
+    
+    TEST_LOGGER("Reverse Square Root of ");
+    print_dec(num);
+    TEST_LOGGER(" is: ");
     print_dec(result);
-    printstr("\n", 1);
+    TEST_LOGGER(" in fp32 encoding")
+
+    TEST_LOGGER("\nCycle count: ");
+    print_dec(cycle_count);
+    TEST_LOGGER("\nInstret count: ");
+    print_dec(instret_count);
+    TEST_LOGGER("\n");
 
     return 0;
 }

@@ -5,6 +5,8 @@ str3: .string ": value "
 str4: .string " <= previous_value "
 str5: .string "All tests passed.\n"
 str6: .string "\n"
+str7: .string "\nCycle count: "
+str8: .string "\nInstret count: "
 
 
 .text
@@ -15,18 +17,52 @@ str6: .string "\n"
 main:
     # Input: void
     # Output: a0 = exit code
-    addi sp, sp, -4  # Allocate stack space
+    addi sp, sp, -12  # Allocate stack space
     sw ra, 0(sp)     # Save return address
+    sw s0, 4(sp)    # Save s0
+    sw s1, 8(sp)    # Save s1
+    sw s2, 12(sp)   # Save s2
+    jal get_cycles  # Get starting cycle count
+    mv s0, a0       # s0 = old_cycles (lower 32 bits)
+    jal get_instret # Get starting instruction count
+    mv s1, a0       # s1 = old_insts (lower 32 bits)
     jal test     # a0 = test()
-    lw ra, 0(sp)     # Restore return address
-    addi sp, sp, 4   # Deallocate stack space
-    beq a0, zero, main.end  # if (a0 == 0) goto main.end
+    mv s2, a0       # s2 = test result
+    jal get_cycles  # Get ending cycle count
+    sub s0, a0, s0   # s0 = new_cycles - old_cycles
+    jal get_instret # Get ending instruction count
+    sub s1, a0, s1   # s1 = new_insts - old_insts
+    beq s2, zero, main.end  # if (a0 == 0) goto main.end
     li a7, 0x40  # syscall: write
     li a0, 1  # stdout
     la a1, str5  # Load address of str5
     li a2, 18  # length = 18
     ecall
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str7  # Load address of str7
+    li a2, 14  # length = 14
+    ecall
+    mv a0, s0  # a0 = cycle count
+    jal print_dec  # print cycle count
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str8  # Load address of str8
+    li a2, 16  # length = 16
+    ecall
+    mv a0, s1  # a0 = instruction count
+    jal print_dec  # print instruction count
+    li a7, 0x40  # syscall: write
+    li a0, 1  # stdout
+    la a1, str6  # Load address of str6
+    li a2, 1  # length = 1
+    ecall
 main.end:
+    lw s2, 12(sp)   # Restore s2
+    lw s1, 8(sp)    # Restore s1
+    lw s0, 4(sp)    # Restore s0
+    lw ra, 0(sp)     # Restore return address
+    addi sp, sp, 16  # Deallocate stack space
     ret
 
 # ======================================

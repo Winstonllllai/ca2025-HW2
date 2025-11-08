@@ -1,7 +1,7 @@
     .text
     .globl  main
 main:
-    addi    x2, x2, -36
+    addi    x2, x2, -44
     sw      x8, 0(x2)
     sw      x9, 4(x2)
     sw      x18, 8(x2)
@@ -13,6 +13,12 @@ main:
     sw      x5, 24(x2)
     sw      x5, 28(x2)
     sw      ra, 32(x2)
+    sw      s5, 36(x2)
+    sw      s6, 40(x2)
+    jal get_cycles
+    mv s5, a0
+    jal get_instret
+    mv s6, a0
 
     # Fix disk positions (BLANK 1-3: neutralize x5 effect)
     # BLANK 1: Fix position at x2+20
@@ -169,13 +175,38 @@ display_move:
     jal     x0, game_loop
 
 finish_game:
+    jal get_cycles
+    sub     s5, a0, s5
+    jal get_instret
+    sub     s6, a0, s6
+    li a7, 0x40
+    li a0, 1
+    la a1, str5
+    li a2, 14
+    ecall
+    mv a0, s5
+    jal print_dec
+    li a7, 0x40
+    li a0, 1
+    la a1, str6
+    li a2, 16
+    ecall
+    mv a0, s6
+    jal print_dec
+    li a7, 0x40
+    li a0, 1
+    la a1, str4
+    li a2, 1
+    ecall
     lw      x8, 0(x2)
     lw      x9, 4(x2)
     lw      x18, 8(x2)
     lw      x19, 12(x2)
     lw      x20, 16(x2)
     lw      ra, 32(x2)
-    addi    x2, x2, 36
+    lw      s5, 36(x2)
+    lw      s6, 40(x2)
+    addi    x2, x2, 44
     ret
 
     .data
@@ -184,4 +215,7 @@ str1:       .asciz  "Move Disk "
 str2:       .asciz  " from "
 str3:       .asciz  " to "
 str4:       .asciz  "\n"
+str5:       .string "\nCycle count: "
+str6:       .string "\nInstret count: "
+
 char_buffer: .space  1

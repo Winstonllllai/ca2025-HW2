@@ -1,8 +1,11 @@
 .text
 .globl  main
 main:
-    addi   sp, sp, -4
+    addi   sp, sp, -16
     sw     ra, 0(sp)
+    sw     s0, 4(sp)
+    sw     s1, 8(sp)
+    sw     s2, 12(sp)
     li a7, 0x40         # syscall: write
     li a0, 1            # file descriptor (stdout)
     la a1, str1         # Load address of
@@ -15,16 +18,48 @@ main:
     la a1, str2         # Load address of
     li a2, 6            # length
     ecall
+    jal get_cycles
+    mv s0, a0           # s0 = start_cycles
+    jal get_instret
+    mv s1, a0           # s1 = start_instret
     la a0, test_data
     lw a0, 0(a0)
     jal fast_rsqrt
+    mv s2, a0           # s2 = result
+    jal get_cycles
+    sub s0, a0, s0      # s0 = end_cycles - start
+    jal get_instret
+    sub s1, a0, s1      # s1 = end_instret - start
+    mv a0, s2           # a0 = result
     jal print_dec
     li a0, 1
     la a1, str3         # Load address of
-    li a2, 18           # length
+    li a2, 16           # length
     ecall
+    li a7, 0x40         # syscall: write
+    li a0, 1            # file descriptor (stdout)
+    la a1, str4         # Load address of
+    li a2, 14           # length
+    ecall
+    mv a0, s0           # a0 = cycle count
+    jal print_dec
+    li a7, 0x40         # syscall: write
+    li a0, 1            # file descriptor (stdout)
+    la a1, str5         # Load address of
+    li a2, 16           # length
+    ecall
+    mv a0, s1           # a0 = instret count
+    jal print_dec
+    li a7, 0x40         # syscall: write
+    li a0, 1            # file descriptor (stdout)
+    la a1, str6         # Load address of
+    li a2, 1            # length
+    ecall
+    lw     s2, 12(sp)
+    lw     s1, 8(sp)
+    lw     s0, 4(sp)
     lw     ra, 0(sp)
-    addi   sp, sp, 4
+    addi   sp, sp, 16
     ret
 # ============================================================
 # function: fast_rsqrt
@@ -673,4 +708,7 @@ test_data: .word 4
 
 str1:      .asciz  "Reverse Square Root of "
 str2:      .asciz  " is: "
-str3:      .asciz  " in fp32 encoding\n"
+str3:      .asciz  " in fp32 encoding"
+str4: .string "\nCycle count: "
+str5: .string "\nInstret count: "
+str6: .string "\n"

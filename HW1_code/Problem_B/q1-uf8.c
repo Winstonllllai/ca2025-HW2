@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include "print.h"
 
+extern uint64_t get_cycles();
+extern uint64_t get_instret();
+
 typedef uint8_t uf8;
 
 static inline unsigned clz(uint32_t x)
@@ -114,8 +117,19 @@ static bool test(void)
 
 int main(void)
 {
-    if (test()) {
+    uint64_t oldcycle = get_cycles();
+    uint64_t oldinstret = get_instret();
+    bool passed = test();
+    uint64_t cycle_count = get_cycles() - oldcycle;
+    uint64_t instret_count = get_instret() - oldinstret;
+    if (passed) {
         TEST_LOGGER("All tests passed.\n");
+        TEST_LOGGER("Cycle count: ");
+        print_dec(cycle_count);
+        TEST_LOGGER("\n");
+        TEST_LOGGER("Instret count: ");
+        print_dec(instret_count);
+        TEST_LOGGER("\n");
         return 0;
     }
     return 1;
